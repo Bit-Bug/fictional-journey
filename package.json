@@ -1,0 +1,26 @@
+{
+  "name": "fictional-journey",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Bit-Bug/fictional-journey.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Bit-Bug/fictional-journey/issues"
+  },
+  "homepage": "https://github.com/Bit-Bug/fictional-journey#readme",
+  "devDependencies": {
+    "aws-cdk": "^2.50.0",
+    "aws-cdk-lib": "^2.50.0",
+    "node-ts": "^5.1.2",
+    "typescript": "^4.8.4"
+  }
+}
