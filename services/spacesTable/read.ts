@@ -1,9 +1,7 @@
-import { DynamoDB } from 'aws-sdk';
-import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
+import { APIGatewayProxyEvent, APIGatewayProxyEventQueryStringParameters, APIGatewayProxyResult, Context } from 'aws-lambda';
+import { TABLE_NAME, PRIMARY_KEY, dbClient} from '../common';
 
-const dbClient = new DynamoDB.DocumentClient();
-const TABLE_NAME = process.env.TABLE_NAME;
-const PRIMARY_KEY = process.env.PRIMARY_KEY;
+
 
 async function handler(event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> {
     const result: APIGatewayProxyResult = {
@@ -12,32 +10,57 @@ async function handler(event: APIGatewayProxyEvent, context: Context): Promise<A
     }
 
     try {
-        if (event.queryStringParameters && PRIMARY_KEY! in event.queryStringParameters) {
-            const keyValue = event.queryStringParameters[PRIMARY_KEY!];
-            const queryResponse = await dbClient.query({
-                TableName: TABLE_NAME!,
-                KeyConditionExpression: '#zz = :zzzz',
-                ExpressionAttributeNames:{
-                    '#zz' : PRIMARY_KEY!
-                },
-                ExpressionAttributeValues:{
-                    ":zzzz" : keyValue
-                }
-            }).promise();
-            result.body = JSON.stringify(queryResponse);
-
+        if (event.queryStringParameters) {
+            if (PRIMARY_KEY! in event.queryStringParameters) {
+                result.body = await queryWithPrimaryPartition(event.queryStringParameters)
+            } else {
+                result.body = await queryWithSecondaryParition(event.queryStringParameters)
+            }
         } else {
-            const queryResponse = await dbClient.scan({
-                TableName: TABLE_NAME!
-            }).promise();
-            result.body = JSON.stringify(queryResponse)
+            result.body = await scanTable();
         }
-
-
     } catch (error: any) {
         result.body = error.message
     }
     return result;
 }
 
+async function queryWithSecondaryParition(queryParams: APIGatewayProxyEventQueryStringParameters) {
+    const queryKey = Object.keys(queryParams)[0];
+    const keyValue = queryParams[queryKey];
+    const queryResponse = await dbClient.query({
+        TableName: TABLE_NAME!,
+        IndexName: queryKey,
+        KeyConditionExpression: '#zz = :zzzz',
+        ExpressionAttributeNames: {
+            '#zz': queryKey!
+        },
+        ExpressionAttributeValues: {
+            ":zzzz": keyValue
+        }
+    }).promise();
+    return JSON.stringify(queryResponse);
+}
+
+async function queryWithPrimaryPartition(queryParams: APIGatewayProxyEventQueryStringParameters) {
+    const keyValue = queryParams[PRIMARY_KEY!];
+    const queryResponse = await dbClient.query({
+        TableName: TABLE_NAME!,
+        KeyConditionExpression: '#zz = :zzzz',
+        ExpressionAttributeNames: {
+            '#zz': PRIMARY_KEY!
+        },
+        ExpressionAttributeValues: {
+            ":zzzz": keyValue
+        }
+    }).promise();
+    return JSON.stringify(queryResponse);
+}
+
+async function scanTable() {
+    const queryResponse = await dbClient.scan({
+        TableName: TABLE_NAME!
+    }).promise();
+    return JSON.stringify(queryResponse)
+}
 export { handler };

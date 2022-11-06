@@ -1,9 +1,7 @@
-import { DynamoDB} from 'aws-sdk';
 import {APIGatewayProxyEvent, APIGatewayProxyResult, Context} from 'aws-lambda';
 import {v4} from 'uuid';
+import { TABLE_NAME, dbClient } from '../common';
 
-const dbClient = new DynamoDB.DocumentClient();
-const TABLE_NAME= process.env.TABLE_NAME;
 
 async function handler(event: APIGatewayProxyEvent, context:Context): Promise<APIGatewayProxyResult>{
     const result: APIGatewayProxyResult = {

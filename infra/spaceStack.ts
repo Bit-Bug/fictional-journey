@@ -14,6 +14,8 @@ export class SpaceStack extends Stack {
             primaryKey:'spaceId',
             createLambdaPath: 'create',
             readLambdaPath: 'read',
+            updateLambdaPath: 'update',
+            deleteLambdaPath: 'delete',
             secondaryIndexes: ['location']
         }
     )
@@ -43,11 +45,13 @@ export class SpaceStack extends Stack {
         const helloNodeLambddaResource = this.api.root.addResource('hellonode');
         helloNodeLambddaResource.addMethod('GET', helloNodaLambdaIntegration);
 
-        //spaces API intgefration
+        //spaces API intgeration
 
         const spaceResources = this.api.root.addResource('spaces');
         spaceResources.addMethod('POST', this.spacesTable.createLambdaIntegration);
         spaceResources.addMethod('GET', this.spacesTable.readLambdaIntegration);
+        spaceResources.addMethod('PUT', this.spacesTable.updateLambdaIntegration);
+        spaceResources.addMethod('DELETE', this.spacesTable.deleteLambdaIntegration);
 
     }
 }
